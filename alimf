@@ -1,0 +1,22 @@
+#! /usr/bin/env ruby
+
+require 'json'
+require 'nokogiri'
+require 'open-uri'
+
+lobsters = []
+doc = Nokogiri::HTML(URI.open('https://lobste.rs/u'))
+doc.css('a').each do |link|
+	if link.attribute('href').to_str.start_with? '/u/'
+		lobsters << link.attribute('name').to_str
+	end
+end
+
+followers = []
+api = JSON.parse(Net::HTTP.get(URI("https://api.github.com/users/#{ARGV[0]}/followers")))
+api.each do |follower|
+	followers << follower["login"]
+end
+
+result = lobsters.intersection followers
+puts result
